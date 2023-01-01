@@ -141,3 +141,115 @@ Children.defaultProps = {
 
 - vue中是通过自定义事件来完成的`emit`
 - React中是通过`props`传递消息, 父组件通过`props`给子组件一个改变自己的回调函数(需要是箭头函数), 然后在子组件中接收这个函数, 并绑定到特定的地方
+
+
+
+### 4. 组件插槽实现
+
+1. 组件的children子元素
+
+```jsx
+<NavBar>
+	<button>按钮</button>
+	<h2>标题</h2>
+    <i>斜体文字</i>
+</NavBar>
+```
+
+- 写进组件NavBar中的元素, 会被放入NavBar实例的`this.props.children`属性里, 形成一个数组, 放入多个时是一个数组, **如果只有一个元素, children就是这个元素**
+
+
+
+2. props属性直接传递React元素
+
+
+
+#### 实现作用域插槽:
+
+- 利用props属性直接传递React元素时, 不传递元素, **而是传递一个接收参数的函数**, 这样不需要再从子组件传出来, 自己调用函数即可
+
+
+
+
+
+## 六. Context的使用
+
+```jsx
+// 支持解构
+<Home {...info} />
+```
+
+- Context提供了一种在组件之间共享此类值的方式, 而不必显式的通过组件树的逐层传递props
+- Context设计的目的是为了共享那些对于一个组件树而言是**"全局"**的数据
+- 可以用redux取代
+
+```jsx
+// 父组件定义
+const ThemeContext = React.createContext()
+
+class ... {
+    ...
+    
+    render(){
+    	return (
+    		// 需要将能使用这个context的子组件包裹起来
+    		<ThemeContext.Provider value={ color: "red" } >
+    			<App />
+    		</ThemeContext.Provider>    		
+    	)
+	}
+}
+```
+
+```jsx
+// 子组件拿取
+render() {
+    // 通过this.context获取
+    console.log(this.context)
+}
+
+// 需要确定要用那个context
+App.contextType = ThemeContext
+```
+
+```jsx
+// 函数式子组件的用法
+
+return (
+	<ThemeContext.Consumer>
+    	{	
+            // 将父组件定义的context value传进来
+            value => {
+                return <h2>{ value.color }</h2>
+            }
+        }
+    </ThemeContext.Consumer>
+
+)
+```
+
+
+
+
+
+## 七. 事件总线
+
+- 利用一些第三方库生成事件总线, 进行触发和监听
+
+```jsx
+// 触发
+eventBus.emit("bannerPre",...args)
+
+// 监听
+componentDidMount(){
+    eventBus.on("bannerPre", (...args) => {
+        console.log("监听到事件")
+    })
+}
+
+// 移除监听
+componentWillUnmount(){
+    event.off("bannerPre", () => {})
+}
+```
+
