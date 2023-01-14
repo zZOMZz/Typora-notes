@@ -4,7 +4,9 @@
 
 ## 一. 监听对象属性的操作
 
-### 1. Object.defineProperty()
+### 1. Object.defineProperty()   (vue2)
+
+- 通过`Object.defineProperty()`来为obj中的属性依次添加一个"拦截器", 
 
 ```js
 // 一种方法, VUE2
@@ -53,7 +55,12 @@ const objProxy = new Proxy(obj,{
     },
     has(target,key){
         return key in target
+    },
+    deleteProperty(taget,key) {
+        delete target[key]
+        console.log("delete success")
     }
+    // 通过完善更多别的捕获器, 可以使这个代理对象能适应更多的使用场景
 })
 
 console.log( "age" in objProxy ) // true
@@ -124,13 +131,15 @@ const fooProxy = new Proxy(foo, {
 
 ## 二. Reflect的作用
 
+- **Reflect**包含一些类似Object上定义的许多方法, 更加严谨和完善, 更符合调用逻辑
+
 - Reflect是ES6新增的API
 - 提供了许多操作JavaScript对象的方法, 其中一些与Object中操作对象的方法**相似**
 
 为什么要用Reflect:
 
 - Object是一个构造函数, 很多操作放到它身上并不合适, 所有集成了Reflect,把这些操作都放到Reflect上
-- 因此Reflect上的一些API更加严谨,可用性更高, 可以处理操作失败的情况
+- 因此Reflect上的一些API更加严谨,可用性更高, **可以处理操作失败的情况**
 
 ```js
 const obj = {

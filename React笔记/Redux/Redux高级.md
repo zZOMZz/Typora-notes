@@ -52,7 +52,14 @@ const store = configureStore({
 
 ### 2. createSlice, createAsyncThunk
 
+[createAsyncThunk | Redux Toolkit (redux-toolkit.js.org)](https://redux-toolkit.js.org/api/createAsyncThunk)
+
 - 用于创建不同模块之间的slice片段
+- `createAsyncThunk`接收的第一个参数, 可以用来表示生命周期
+- For example, a `type` argument of `'users/requestStatus'` will generate these action types:
+  - `pending`: `'users/requestStatus/pending'`
+  - `fulfilled`: `'users/requestStatus/fulfilled'`
+  - `rejected`: `'users/requestStatus/rejected'`
 
 ```jsx
 import { createSlice } from "@reduxjs/toolkit"
@@ -107,7 +114,7 @@ const counterSlice = createSlice({
 export const { addNumber, subNumber } = counterSlice.actions
 
 // 4.只需要将slice片段的reducers模块导出就行, 用于store定义
-export default counterSlice.reducers
+export default counterSlice.reducer
 ```
 
 - 在slice片段外, 通过`createAsyncThunk`定义好被模块dispatch的函数, 在slice片段内, 定义好async处理函数面对不同状态的处理, 改变state, 不能在外部直接修改内部slice的数据

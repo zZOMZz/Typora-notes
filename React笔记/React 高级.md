@@ -4,6 +4,8 @@
 
 ## 一. setState
 
+- 类组件改变state调用的方法
+
 ```jsx
 // 1. setState是异步的
 // 2. setState不仅能接手一个对象, 也能接手一个回调函数
@@ -118,7 +120,7 @@ getDOM(){
 2. `createRef`, 先创建再绑定
 
 ```jsx
-import { createRRef } from "react"
+import { createRef } from "react"
 
 constructor(){
     this.titleRef = createRef()
@@ -162,6 +164,9 @@ getDOM() {
 - 上述的方法适用于**类组件**, 因为只有类组件有实例, 函数式组件没有实例
 
 函数组件:
+
+- 利用forwardRef加强后的函数组件可以**拿到父组件传入的ref**, 在接收的第二个参数
+- 本组件中使用ref, 需要`useRef Hook`
 
 ```jsx
 improt { forwardRef } from "react"
@@ -246,7 +251,7 @@ conponentDidMount() {
 
 
 
-## 七. Portals
+## 七. Portals(挂载元素)
 
 将特定的元素挂载到特定的地方
 

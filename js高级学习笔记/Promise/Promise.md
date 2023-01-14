@@ -2,7 +2,16 @@
 
 # Promise
 
+**状态:**
+
+- pending
+- fulfilled
+- rejected
+
 ## 一. Promise中resolve的值
+
+1. resolve返回的是一个普通值时, Promsie成功被resolve进入fulfilled的状态
+2. resolve返回的是另一个Promise, 则当前Promise的状态还是由返回的这个Promise决定, 如果返回的Promise被reject了, 那么当前的Promise会进入rejected状态, 调用catch里的callback
 
 ```js
 const promise = new Promise((resolve,reject) => {
@@ -51,6 +60,7 @@ Promsie.reject()同理
 - Promise.all([arr])
   - 等待传入的所有Promise变为fulfilled状态, 并将返回值放入一个数组
   - 一旦有一个promise被reject了,那么整个promise就是reject的
+- 被接收的的`res`也会是一个对应顺序的数组
 
 
 
@@ -63,12 +73,16 @@ Promsie.reject()同理
 
 ### 4. Promise.race()
 
+- 等待第一个返回的Promsie
+
 - 获得第一个Promise的值
 - 无论是fulfilled还是reject的结果
 
 
 
 ### 5. Promise.any()
+
+- 等待返回的第一个`fulfilled`状态的Promise
 
 - 与race相似,会返回第一个返回的Promise的值
 - 但这个值必须是fulfilled的状态

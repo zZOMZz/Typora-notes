@@ -11,7 +11,7 @@
 给一个组件的显示和消失添加某种过渡动画, 增加用户体验
 
 ```shell
-npm install react-transition-group 
+npm install react-transition-group
 ```
 
 

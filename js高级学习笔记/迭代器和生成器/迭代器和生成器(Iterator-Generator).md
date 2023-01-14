@@ -17,9 +17,9 @@
   - 例如数据库中的光标
 - JavaScript中,迭代器是一个具体的对象, 这个对象需要符合迭代器协议
   - 迭代器协议定义了产生一系列值的标准方式
-  - 在JavScript中这个标准就是要有一个next方法
+  - **在JavScript中这个标准就是要有一个next方法**
 - next方法要求:
-  - 无参数或者一个参数,需要返回一个对象
+  - 无参数或者一个参数,需要返回一个对象`{ done: boolean, value: ... }`
   - 返回的对象需要具有两个属性
     - done(boolean)
       - false: 迭代器可以产生序列中的下一个值
@@ -29,6 +29,10 @@
 
 
 ### 2. 可迭代对象
+
+- 包含一个属性: [Symbol.iterator]
+- 这个属性是一个函数, 该函数返回一个含有`next`属性的对象, 该next是一个可被执行的函数, next函数返回的值得格式和上面相同
+- 因此可以在这个next函数中自由定义该返回什么样的数据
 
 ```js
 // 1.迭代对象中的属性
@@ -74,6 +78,7 @@ const obj = {
         const values = Object.keys(this)
         let index = 0
         return {
+            // 1. 可被外界遍历得函数
             next(){
                 if(index < keyArr.length){
                     return { done: false, value: values[index++] }
@@ -81,12 +86,19 @@ const obj = {
                     return { done: true }
                 }              
             },
-            // 检测到break就调用这个函数而不是继续调用next
+            
+            // 2.检测到break就调用这个函数而不是继续调用next
             return(){
                 console.log("被中断了")
                 return { done: true }
             }
         }
+    }
+
+	// 利用生成器改进
+	*[Symbol.iterator]: function() {
+        const values = Object.keys(this)
+        yield* values
     }
 }
 ```
@@ -108,9 +120,12 @@ const obj = {
 
 - 生成器: 是ES6中新增的一种函数控制,使用的方案, 它可以让我们**更加灵活的控制函数什么时候继续执行,暂停执行**
 - 生成器函数: 
+  - 只能被next调用返回值
   - 需要在function的后面加上一个`*`
   - 生成器函数需要通过yield关键字来控制函数的执行流程
   - 生成器函数的返回值是一个Generator(生成器) **一种迭代器**
+  
+- ==yield可以看成是一种return==
 
 ###  1. 简单介绍:
 
@@ -140,8 +155,6 @@ generator.next() // "rrr"
 ```js
 generator.return("aaa") // 返回{ done: true, value: "aaa" }
 ```
-
-
 
 ### 2. yield语法糖
 

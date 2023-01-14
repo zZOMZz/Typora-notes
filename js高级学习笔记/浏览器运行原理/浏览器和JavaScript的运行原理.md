@@ -36,7 +36,7 @@
 
 触发回流的操作:
 
-1. 改变DOM解构(添加或移除节点)
+1. 改变DOM树结构(添加或移除节点)
 2. 改变布局(width, mrgin)
 3. 修改window窗口尺寸
 4. 调用getComputedStyle方法获取尺寸,位置等信息
@@ -56,7 +56,7 @@
 
 
 
-#### 5. composite合成
+#### 5. composite合成(性能优化)
 
 - 绘制过程中, 可以将布局后的元素绘制到多个合成图层中(一种浏览器的优化手段)
 - 默认情况下,标准流中的内容都是被绘制在同一个图层中
@@ -101,9 +101,11 @@ defer和async的使用场景
 
 #### 1.1 V8引擎解析过程总览
 
+[🚀⚙️ JavaScript Visualized: the JavaScript Engine - DEV Community 👩‍💻👨‍💻](https://dev.to/lydiahallie/javascript-visualized-the-javascript-engine-4cdf)
+
 <img src="C:\Users\zZOMZz\AppData\Roaming\Typora\typora-user-images\image-20221209194437914.png" alt="image-20221209194437914" style="zoom:200%;" />
 
-![Snipaste_2022-12-09_20-34-52](C:\Users\zZOMZz\Desktop\Typora笔记\js高级学习笔记\this_浏览器运行原理\图片\Snipaste_2022-12-09_20-34-52.png)
+![Snipaste_2022-12-09_20-34-52](.\图片\Snipaste_2022-12-09_20-34-52.png)
 
 步骤:
 
@@ -125,15 +127,15 @@ AST抽象语法树: 源代码的抽象语法结构的树状表现形式，这里
 
 ![image-20221209200108661](C:\Users\zZOMZz\AppData\Roaming\Typora\typora-user-images\image-20221209200108661.png)
 
-![pv4y4w0doztvmp8ei0ki](C:\Users\zZOMZz\Desktop\Typora笔记\js高级学习笔记\this_浏览器运行原理\图片\pv4y4w0doztvmp8ei0ki.gif)
+![pv4y4w0doztvmp8ei0ki](.\图片\pv4y4w0doztvmp8ei0ki.gif)
 
-![bic727jhzu0i8uep8v0k](C:\Users\zZOMZz\Desktop\Typora笔记\js高级学习笔记\this_浏览器运行原理\图片\bic727jhzu0i8uep8v0k.gif)
+![bic727jhzu0i8uep8v0k](.\图片\bic727jhzu0i8uep8v0k.gif)
 
-![sgr7ih6t7zm2ek28rtg6](C:\Users\zZOMZz\Desktop\Typora笔记\js高级学习笔记\this_浏览器运行原理\图片\sgr7ih6t7zm2ek28rtg6.gif)
+![sgr7ih6t7zm2ek28rtg6](.\图片\sgr7ih6t7zm2ek28rtg6.gif)
 
 解析过程
 
-1. Blink将源码交给V8引擎, Stream进行编码转换
+1. Blink将源码交给V8引擎, Stream进行编码转换, 将编码转换为字符流
 2. Scanner会进行词法分析(lexical analysis)
    1. 拿到从UTF-16流中解码出的Unicode characters(Unicode 字符)
    2. 将由一个或多个具有单一语义含义的字符组成的块(称为标记--Token)交付给Parse和PreParse
@@ -148,9 +150,11 @@ AST抽象语法树: 源代码的抽象语法结构的树状表现形式，这里
 
 [官方文档](https://v8.dev/blog/ignition-interpreter)
 
-![i5f0vmcjnkhireehicyn](C:\Users\zZOMZz\Desktop\Typora笔记\js高级学习笔记\this_浏览器运行原理\图片\i5f0vmcjnkhireehicyn.gif)
+![i5f0vmcjnkhireehicyn](.\图片\i5f0vmcjnkhireehicyn.gif)
 
 - 将解析生成的AST解析树解释成字节码
+  - 对于常用的code, 会进行优化(optimized)成机器码
+
 
 ![image-20221209202203313](C:\Users\zZOMZz\AppData\Roaming\Typora\typora-user-images\image-20221209202203313.png)
 
@@ -158,11 +162,11 @@ AST抽象语法树: 源代码的抽象语法结构的树状表现形式，这里
 
 [官方文档](https://v8.dev/blog/turbofan-jit)
 
-![ongt4qftovd82sp2vihk](C:\Users\zZOMZz\Desktop\Typora笔记\js高级学习笔记\this_浏览器运行原理\图片\ongt4qftovd82sp2vihk.gif)
+![ongt4qftovd82sp2vihk](.\图片\ongt4qftovd82sp2vihk.gif)
 
 - 可以将字节码编译为cpu能直接运行的机器码
 - 将多次运行的函数标记为**热点函数**, 将其的字节码解析为机器码, 提高代码执行效率
-- 当字节码发生改变(函数输入类型变化), 这个时候机器码就会反向编译还原为字节码
+- 当字节码发生改变(如: 变量类型变化), 如果发生这种情况，机器代码将被取消优化，引擎将回退到解释生成的字节代码, 以字节代码的方式运行
 
 
 

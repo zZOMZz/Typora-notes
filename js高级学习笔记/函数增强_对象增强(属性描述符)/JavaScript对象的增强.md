@@ -61,7 +61,7 @@ descriptor属性描述符:
 const obj = {
     name: "zzt"
 }
-const _name = ''
+let _name = ''
 Object.defineProperty(obj,"name",{
     // 可以用来监听设置变化
     set: function(value){

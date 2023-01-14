@@ -8,7 +8,7 @@
 
 
 
-- URL的hash
+- URL的hash,==待学习==
   - URL的hash也就是锚点(#), 本质上是改变了window.loaction的href属性
   - 我们可以直接赋值location.hash来该百年href, 但是页面不发生刷新
 
@@ -130,6 +130,9 @@ render() {
 ## 五. 子路由配置
 
 - 配置子路由是为了让子组件显示在父路由的范围下
+  - 父路由的显示范围由定义时的`<Routes></Routes>`决定
+  - 或者由`useRoutes()`调用时的位置决定
+
 - 子路由显示时, 父路由一定显示
 
 <img src="C:\Users\zZOMZz\Desktop\Typora笔记\React笔记\图片\Snipaste_2022-12-28_22-29-05.png" alt="Snipaste_2022-12-28_22-29-05" style="zoom:50%;" />
@@ -151,13 +154,15 @@ render() {
     <h2>UUUUU</h2>
     
     <!-- 占位符, 子路由的组件会被渲染在这 -->
-    <Outlet>
+    <Suspense>
+    	<Outlet>
+    </Suspense>
 </div>
 ```
 
+- 二级路由最好也添加一个`Suspense`, 避免在懒加载二级路由的时候, 调用的是以及路由的fallback, 使这个fallback的影响范围增大
 
-
-## 六. 手动路由跳转
+## 六. 手动路由跳转(useNavigate Hook)
 
 - 不止利用`<a><a/>`来跳转, 也可以使用别的任何标签
 
@@ -233,7 +238,7 @@ const query = Object.fromEntries(searchParams)
 
 
 
-## 八. 分模块定义routes
+## 八. 分模块定义routes(useRoutes Hook)
 
 - 分开像VUE一样定义好routes数组
 - 再将routes数组直接在HTML中使用`useRoutes(routes)`进行调用
@@ -279,5 +284,37 @@ import { routes } from "./routes"
     	<App />
     </Suspense>
 </HashRouter>
+```
+
+
+
+## 九. 懒加载
+
+```tsx
+// router.ts
+const Focus = lazy(() => import('@/views/focus'))
+const Album = lazy(() => import('@/views/discover/c-views/album'))
+
+// App.tsx
+function App() {
+  const dispatch = useDispatch<any>()
+  useEffect(() => {
+    dispatch(fetchCurrentSong(25906124))
+  })
+
+  return (
+    <div className="App">
+      <Header />
+          <!-- 需要将需要懒加载的组件用Suspense包裹起来, 提供一个fallback  -->
+      <Suspense fallback="loading">
+        <div className="main">{useRoutes(Routes)}</div>
+      </Suspense>
+      <AppPlayerBar />
+      <Footer />
+    </div>
+  )
+}
+
+export default App
 ```
 

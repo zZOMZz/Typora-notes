@@ -70,9 +70,10 @@ React的生命周期主要是针对类组件, 函数组件需要hook来模拟生
 React的生命周期函数(告诉我们当前处于哪些阶段, 会对我们组件内部实现回调):
 
 - `componentDidMount`: 组件已经被挂载到DOM上, 就会回调
-  - 依赖DOM的操作可以在这里进行
-  - 发送网络请求
+  - **依赖DOM的操作可以在这里进行**
+  - **发送网络请求**
   - 可以在此处添加一些订阅
+  - 在render之后执行
 - `componentDidUpdate`: 组件已经发生更新时, 就会发生回调
   - 更新后会被立即调用
 - `componentWillUnmount`: 组件机键被移除时, 就会发生回调
@@ -164,15 +165,16 @@ Children.defaultProps = {
 
 
 
-#### 实现作用域插槽:
+### 5.实现作用域插槽:
+
+- 需要依赖子组件中数据进行渲染
 
 - 利用props属性直接传递React元素时, 不传递元素, **而是传递一个接收参数的函数**, 这样不需要再从子组件传出来, 自己调用函数即可
+- 依赖函数闭包
 
 
 
-
-
-## 六. Context的使用
+## 六. Context的使用(全局变量)
 
 ```jsx
 // 支持解构
@@ -181,10 +183,10 @@ Children.defaultProps = {
 
 - Context提供了一种在组件之间共享此类值的方式, 而不必显式的通过组件树的逐层传递props
 - Context设计的目的是为了共享那些对于一个组件树而言是**"全局"**的数据
-- 可以用redux取代
+- 可以用redux取代, **redux中也利用到了Context**
 
 ```jsx
-// 父组件定义
+// 1.父组件定义
 const ThemeContext = React.createContext()
 
 class ... {
@@ -192,7 +194,7 @@ class ... {
     
     render(){
     	return (
-    		// 需要将能使用这个context的子组件包裹起来
+    		// 2.需要将能使用这个context的子组件包裹起来
     		<ThemeContext.Provider value={ color: "red" } >
     			<App />
     		</ThemeContext.Provider>    		
@@ -204,16 +206,17 @@ class ... {
 ```jsx
 // 子组件拿取
 render() {
-    // 通过this.context获取
+    // 4.通过this.context获取
     console.log(this.context)
 }
 
-// 需要确定要用那个context
+// 3.需要确定要用那个context
 App.contextType = ThemeContext
 ```
 
 ```jsx
-// 函数式子组件的用法
+// 5.函数式子组件的用法
+// 利用Consumer
 
 return (
 	<ThemeContext.Consumer>

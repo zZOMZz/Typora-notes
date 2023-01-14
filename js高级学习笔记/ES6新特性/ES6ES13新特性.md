@@ -57,11 +57,11 @@ console.log(window.message)
 
 ![image-20221213184047902](.\图片\image-20221213184047902.png)
 
-
+- 一段”有问题“的代码
 
 ```js
 // 下面这段代码有问题!!!
-// 所有的按钮点击时打印的数字永远是最后一个数
+// 1.所有的按钮点击时打印的数字永远是最后一个数
 const btnEls = document.querySelectorAll("button")
 for(var i = 0; i < btnEls.length; i++ ){
     const btnEl = btnEls[i]
@@ -69,9 +69,9 @@ for(var i = 0; i < btnEls.length; i++ ){
         console.log(`点击了第${i}个按钮`)
     }
 }
-// 原因:
-// 这里定义i时使用var, 导致每次都将i添加到window上, 因此函数闭包时只保存全局环境, 但循环结束后, 全局环境上的i自然为最后一个
-// 改进方法
+// 2.原因:
+// 这里定义i时使用var, 导致每次都将i添加到window上,没有单独创造环境, 因此函数闭包时只保存全局环境, 在循环结束后, 全局环境上的i自然为最后一个
+// 3.改进方法
 const btnEls = document.querySelectorAll("button")
 for(let i = 0; i < btnEls.length; i++ ){
     const btnEl = btnEls[i]
@@ -79,7 +79,7 @@ for(let i = 0; i < btnEls.length; i++ ){
         console.log(`点击了第${i}个按钮`)
     }
 }
-// 原因
+// 4.原因
 // let会创建一个单独的词法环境, 因此函数闭包时保存的环境就是特定的词法环境, 里面的i也是对应的i
 ```
 
@@ -262,6 +262,8 @@ map.set(info,"ASa")
 
 map常见的属性和方法:
 
+- **支持以 `new Map([[key1,value1], [key2,value2], [key3,value3]])`**的形式定义map
+
 - size获取map的尺寸
 - get(key): 根据key获取内容
 - delete(key): 删除内容
@@ -281,13 +283,13 @@ const minute = "15".padStart(2, "0")  // "15"
 const second = "6".padStart(2,"0")  // "06"
 
 const cardNumber = "156415646515631561"
-const lastFourNumber = cardNumber.slice(-4)
+const lastFourNumber = cardNumber.slice(-4)  // "1561"
 const finalCardNumber = lastFourNUmber.padStart(cardNumber.length, "*")
 ```
 
 
 
-## 十一. 其他新增属性
+## 十一. 其他属性和方法
 
 - Trailing Commas : 一种语法, 允许在定义和调用函数时,在参数的尾部加一个逗号
 - Object.getOwnPropertyDescriptors(): 获取对象的描述符
@@ -301,6 +303,7 @@ const finalMessages = message.flatMap(item => item.split(" "))
 ```
 
 - Object.fromEntries() 将[[name, "Zzz"], [age , 15]] 这种数组转换为对象
+- Object.entries(obj) 将对象转换为 `[[key,value],[key,value]]`这种形式
 
 ```js
 for ( const [key, value] of objs ){
@@ -324,6 +327,7 @@ obj?.friend?.fuction?.()  // 当obj有frined再执行这个代码, 没有的话�
 
 
 - for in 遍历对象拿到的是key
+- for of 拿到的是迭代属性内返回的value
 
 
 
@@ -365,7 +369,7 @@ const info2 = info1.deref()
 
 ```js
 const name = ["Zz","zzzz","sadad"]
-console.log(name.at(-1))
+console.log(name.at(-1))  // "sadad"
 // 也可以用于字符串
 ```
 
@@ -375,7 +379,7 @@ console.log(name.at(-1))
 
 
 
-- Object.create(obj) : 创建一个对象,该对象的隐式原型指向obj
+- Object.create(obj) : 创建一个对象,该对象的隐式原型(`__proto__`)指向obj
 
 
 

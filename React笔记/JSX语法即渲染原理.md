@@ -208,7 +208,7 @@ return (
 
 
 
-## 二. JSX渲染流程
+## 二. JSX渲染流程(React.createElement)
 
 1. 遇到任何带标签的`<APP/>`, jsx是通过Babel转换成React.createElement()函数调用,创建元素组成虚拟DOM
 2. 利用Babel转换其中的html代码, 每遇到一个标签,就会调用`React.createElement("div",{属性},...子元素)`创建一个一个元素, 生成一个树结构
