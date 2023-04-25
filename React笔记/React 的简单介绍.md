@@ -91,9 +91,12 @@ foo()  // 在严格模式下, this指向undfined, 宽松下指向window
 #### 解决方法:
 
 - 在绑定监听函数时利用bind绑定this, 或者在constructor底部绑定
-- 将函数定义为箭头函数:
-  - 可以直接将方法定义为箭头函数然后传入其中
-  - 也可以传入一个箭头函数调用方法, 因此在调用方法的时候会通过==隐式绑定==将this传入到方法函数中
+- **将函数定义为箭头函数(使用`public class fields`实验语法):**
+  - 可以直接将方法定义为箭头函数然后传入其中, **这个箭头函数中的this是已经被绑定完成的了**
+  - `create react app`脚手架默认使用了这个语法
+- 也可以传入一个箭头函数并调用方法, 因此在调用方法的时候会通过==隐式绑定==将this传入到方法函数中
+  - 当这个方法会导致每次调用`render`函数重新渲染这个组件的时候都会**重新生成一个回调函数**, 如果把这个回调函数作为`props`传入子组件, 那么会导致子组件重新渲染, 降低性能
+
 
 ```jsx
 class obj {
@@ -111,6 +114,7 @@ class obj {
   }
     
   render(){
+      // 使用回调函数调用
       return (
       	<button onClick={ () => this.btnClick() } >Click</button>
       )
@@ -119,7 +123,7 @@ class obj {
 
 const a = new obj();
 const fo = a.foo;
-fo();
+fo();   // 可见这里的this已经被绑定了
 // 打印出
 // obj { name: "zzt", foo: () => {...}}
 // zzt
@@ -139,7 +143,7 @@ const obj2 = {
 const obj1 = {
   fa: obj2.ab,
   ab() {
-    // 1.这里的this还是指向window
+    // 1.这里的this还是指向window, 证明this已经被绑定了
     this.fa();
     
     // 2. 这里的this指向这个对象obj1, 隐式绑定

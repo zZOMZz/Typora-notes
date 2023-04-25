@@ -86,6 +86,8 @@ React的生命周期函数(告诉我们当前处于哪些阶段, 会对我们组
 
 ## 五. 组件间通信
 
+- 在父组件中间插入的所有的子组件内容都会作为`props.children`传给父组件
+
 - 父组件通过`[属性] = [值]`的形式来传递给子组件数据
 
 ```
@@ -187,7 +189,8 @@ Children.defaultProps = {
 
 ```jsx
 // 1.父组件定义
-const ThemeContext = React.createContext()
+const ThemeContext = React.createContext("默认值")
+// 只有当组件所处的树中没有匹配到 Provider 时，其 defaultValue 参数才会生效
 
 class ... {
     ...
@@ -205,6 +208,7 @@ class ... {
 
 ```jsx
 // 子组件拿取
+static contextType = ThemeContext  // 静态方法, 也可以这样指定context
 render() {
     // 4.通过this.context获取
     console.log(this.context)
@@ -231,7 +235,7 @@ return (
 )
 ```
 
-
+- **但需要传递一个对象或者函数时, 为了避免Provider组件在重新render渲染时, 重新传递一个新的值, 从而导致子组件进行不必要的更新, 可以将要传递的值放入到组件的`state`中**
 
 
 
@@ -254,5 +258,44 @@ componentDidMount(){
 componentWillUnmount(){
     event.off("bannerPre", () => {})
 }
+```
+
+
+
+## 八. 错误边界
+
+- **捕获子组件中出现的js错误, 避免程序崩溃**
+
+```jsx
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    // 更新 state 使下一次渲染能够显示降级后的 UI
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    // 你同样可以将错误日志上报给服务器
+    logErrorToMyService(error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // 你可以自定义降级后的 UI 并渲染
+      return <h1>Something went wrong.</h1>;
+    }
+
+    return this.props.children; 
+}
+```
+
+```jsx
+<ErrorBoundary>
+  <MyWidget />
+</ErrorBoundary>
 ```
 

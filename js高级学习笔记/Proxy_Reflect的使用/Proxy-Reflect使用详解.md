@@ -4,7 +4,7 @@
 
 ## 一. 监听对象属性的操作
 
-### 1. Object.defineProperty()   (vue2)
+### 1. Object.defineProperty()   (vue2)(属性描述符)
 
 - 通过`Object.defineProperty()`来为obj中的属性依次添加一个"拦截器", 
 
@@ -127,19 +127,91 @@ const fooProxy = new Proxy(foo, {
 })
 ```
 
+#### 2.1 撤销代理
+
+```js
+const target = {
+    foo: "zz"
+}
+
+const handler = {
+    get() {
+        return "zzzz"
+    }
+}
+
+const { proxy, revoke } = Proxy.revocable(target,handler)
+proxy.foo // "zzzz"
+
+revoke()  // 切断代理对象和target目标的联系 
+proxy.foo  // 报错TypeError
+```
+
+#### 2.2 代理的问题
+
+- **this问题**
+
+```js
+const target = {
+    thisEqualProxy() {
+        console.log(this === proxy)
+    }
+}
+
+const proxy = new Proxy(target,{})
+
+target.thisEqualProxy() // false
+proxy.thisEqualProxy() // true
+```
+
+- **内部槽位**
+
+  - 有些ECMAScript的内置类型可能会依赖代理无法控制的机制, 结果在代理上调用某些方法时就会出错
+
+  ```js
+  // 如Date类型
+  const target = new Date()
+  const proxy = new Proxy(target,{})
+  proxy instanceof Date  // true
+  proxy.getDate()  // TypeError: this is not a Date object
+  ```
+
+  
+
 
 
 ## 二. Reflect的作用
 
-- **Reflect**包含一些类似Object上定义的许多方法, 更加严谨和完善, 更符合调用逻辑
+- **Reflect上有所有代理可被捕获的方法所对应的API,** 所以如果要创建一个可以捕获所有方法的代理可以直接(函数的输入和输出即函数签名相同)
+- Reflect API 并不局限于捕获处理程序, **大多数的Reflect API方法在Object对象类型上有对应的方法**
+- **Object上的方法适用于通用程序, 而反射方法适用于细粒度的对象控制与操作**
 
-- Reflect是ES6新增的API
-- 提供了许多操作JavaScript对象的方法, 其中一些与Object中操作对象的方法**相似**
+```js
+// 所有方法都可以被捕获
+const proxy = new Proxy(target,Reflect)
 
-为什么要用Reflect:
+// 只捕获get方法
+const proxy = new Proxy(target,{
+    get: Reflect.get
+})
+```
 
-- Object是一个构造函数, 很多操作放到它身上并不合适, 所有集成了Reflect,把这些操作都放到Reflect上
-- 因此Reflect上的一些API更加严谨,可用性更高, **可以处理操作失败的情况**
+
+
+
+
+### 1.为什么要用Reflect:
+
+- **状态标记**: 许多Reflect方法会返回称为"状态标记"的boolean值, 表示意图执行的操作是否成功
+  - 如: 如果`Reflect.defineProperty()`发生问题, 则会返回false, 而不是抛出错误
+- **可以使用一等函数替代某些操作符**:
+  - `Reflect.get()`: 可以替代对象属性访问操作符
+  - `Reflect.set()`: 可以替代`=`赋值操作符
+  - `Reflect.has()`: 可以替代`in`操作符或`with()`
+  - `Reflect.deleteProperty()`: 可以替代`delete`操作符
+  - `Reflect.constructor()`: 可以替代`new`操作符
+- **安全的应用函数**
+  - 可以通过`Reflect.apply(myFunc,thisArg,argumentList)`的方式来调用
 
 ```js
 const obj = {
@@ -150,7 +222,7 @@ const obj = {
 const objProxy = new Proxy(obj, {
     set(target,key,newValue,receiver){
         // Reflect的set会返回一个boolean值,用于判断赋值是否成功, recevier可以改变接收器中this的指向
-        const isSuccess = Reflect.set(target,key,newValue,receiver)
+        const isSuccess = Reflect.set(...arguments)
         if(!isSuccess){
             throw new Error("Set failure")
         }

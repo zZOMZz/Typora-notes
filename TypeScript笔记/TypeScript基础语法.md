@@ -189,7 +189,7 @@ type ABC = string | number  // 只需要满足其中的一个条件即可
 ```
 
 - 交叉类型
-  - 交叉类型需要满足多个类型条件
+  - 交叉类型需要满足多个类型条件, 都要满足
 
 ```tsx
 type bas = ABC & CBA  // 既要满足ABC类型, 也要满足CBA类型
@@ -279,19 +279,27 @@ type Ponit = {
 - **被赋予interface | type类型的对象不能随意添加属性**
 
 ```tsx
+// 1. 声明对象
 interface Point {
     x: number
     y: number
 }
+
+// 2. 声明函数
+interface f {
+  (a:number, b: number): number
+}
+
+const add: f = (a, b) => a + b;
 ```
 
 
 
 ### 3. 两者的区别
 
-- type不仅能对象类型, 还能定义别的简单类型, 使用范围更广; interface只能用来声明对象
+- type不仅能对象类型, 还能定义别的简单类型, 使用范围更广; interface只能用来声明对象(包括函数)
 - 声明对象时, interface能重复声明一个对象, 两个对象会合并; 而type不能允许相同名称的别名同时存在
-- interface支持继承: `interface Point1 exxtends Point {}`
+- interface支持**继承:** `interface Point1 exxtends Point {}`
 - interface可以被类实现
 
 ```tsx
@@ -311,6 +319,7 @@ class Person implements Point {
 - 可以按上面的定义方法赋予函数类型,  但如果需要给函数添加**属性**, 则需要用到函数标签的做法
 
 ```tsx
+// 可以同时给函数签名赋予属性
 interface IFunction {
     name: string
     (num1: number, num2: number): number
@@ -330,10 +339,18 @@ console.log(bar.name)
 
 ```tsx
 class Person {
+    constructor(age: number, height: number) {
+        this.age = age;
+        this.height = height
+    }
     
+    getName() {
+        return this.name
+    }
 }
 interface IPerson {
-    // 表示这个函数可以被new调用
+    // 表示这个函数可以被new调用, 返回一个Person实例
+    // InstanceType<typeof Person>是这个实例的类型
     new (): Person
 }
 
@@ -342,8 +359,19 @@ function factory(fn: IPerson) {
     return f
 }
 
+// 返回一个实例
 factory(Person)
 ```
+
+#### 2.1 构造签名与`InstanceType<typeof Person>`的区别
+
+- **构造签名**是对类(Person)的构造函数(constructor)接收的参数和返回的类型的描述, 对类中定义的属性和方法没有规定, 其返回一个实例, 类型为`InstanceType<typeof Person>`
+- `InstanceType<typeof Person>`是对类的实例的属性和方法进行描述, 包括类中定义的属性和方法, 但对构造函数没有规定, 是一个类型
+
+#### 2.2 `InstanceType<typeof Person>`与`Person`类型的区别
+
+- `Person`: 以类型名直接为类型, 表示的是`Person`类本身的类型, 包括静态属性和方法以及构造函数
+- `IntanceType<typeof Person>`: 则是更准确的对创造出来的实例的
 
 
 
@@ -510,5 +538,7 @@ enum Direction {
     RIGHT = "RIGHT"
 }
 // 不赋值的会默认赋予"0 , 1, 2 ..."从前面一个属性开始递增
+
+console.log(Direaction.UP)  // "UP"
 ```
 

@@ -6,7 +6,7 @@
 
 ```tsx
 class Person {
-	// 成员属性需要先声明, 也可以设置初始化值
+	// 1. 成员属性需要先声明, 也可以设置初始化值
 	name: string = "zzt"
     age: number
     
@@ -41,7 +41,25 @@ class Student extends Person {
 
 ## 三. 类的修饰符
 
-- **public**:公有的属性和方法, 任何地方都可使用, 默认定义的属性和方法就是这种
+### 1. 介绍3种修饰符
+
+- `public`:公有的属性和方法, 任何地方都可使用(类与实例), **默认定义**的属性和方法就是这种
+  - 只有用`public`定义的属性和方法能在类的外部(实例)中被使用
+
+- `private`: 仅在自身中可见, 私有的属性和方法, 实例和子类无法访问
+  - 在`private`属性和方法上, 子类除了能继承外, 其与一切都得自己实现
+  - 因为如果父类中有`constructor`构造函数, 子类也必须传入对应的参数, 因此即使是私有属性也得继承, 但无法访问
+
+- `protected`: 仅在自身和子类中可见, 受保护的属性和方法, 实例无法访问
+  - 与`private`修饰符不同, `protect`修饰符定义的属性和方法能在子类中直接使用: `this.age`, `this.getAge()`, 调用父类中直接定义的方法
+
+
+
+
+- `readonly`: 只读属性, 不能写入操作, 只可以在初始化时写入数据
+  - 也可以在对象中使用(type | interface)
+
+### 2. 使用修饰符的技巧
 
 ```tsx
 // 利用public可以简写constrctor函数
@@ -49,24 +67,18 @@ class Person {
     name: string
     age: number
     
+    // 这样就不用在内部再额外定义了
     constructor(public name: string, public age: number){}
 }
 ```
 
 
 
-- **private**: 仅在同一类中可见, 私有的属性和方法, 实例无法访问
-- **protected**: 仅在自身和子类中可见, 受保护的属性和方法, 实例无法访问
-
-- **readonly**: 只读属性, 不能写入操作, 只可以在初始化时写入数据
-  - 也可以在对象中使用(type | interface)
-
-
-
 
 ## 四. 类的setter和getter
 
-- 对类中属性的访问进行拦截操作, 可以进行一些额外判断操作
+- 对类中属性的访问进行**拦截操作**, 可以在中间进行一些额外的操作
+- 需要使用`private`
 
 ```tsx
 class Person {
@@ -99,7 +111,10 @@ class Person {
 class Person {
     // 使用修饰符的参数不需要再在上面先声明
     
-    constructor(public name: string, private _age: number){}
+    constructor(public name: string, private _age: number){
+        // 也不需要在内部在定义了
+        // 不需要 this.name = name
+    }
 }
 ```
 

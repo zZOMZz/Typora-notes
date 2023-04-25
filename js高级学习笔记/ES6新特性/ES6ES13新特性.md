@@ -49,8 +49,21 @@ console.log(window.message)
     function foo(){}
 }
 // 上面这种形式会形成自己的作用域,外界无法访问
+```
 
+```js
+// 在if中使用var定义变量会将变量定义到全局对象上, 外界可以访问到
+// 使用const/let会形成块级作用域, 外界无法找到这个变量, 只能在作用域内使用
+if (true) {
+  var age = "zzt";
+  const height = "1.8";
+  let name = "zz"
+}
+console.log(age);
 
+// 报错
+console.log(height);
+console.log(name)
 ```
 
 
@@ -165,6 +178,25 @@ console.log(Symbol.keyFor(s))  // "aa"
 
 
 
+### 6. Symbol.for 和 Symbol的区别
+
+- `Symbol.for()`所定义的Symbol是全局作用域内都相同的, 即使是在别的模块中定义, 只要`description`相同, 那么拿到的Symbol就相同
+- `Symbol()`定义的Symbol在本地中是唯一的, 即使是同一`description`返回的Symbol是不相同的
+
+```js
+import { ss } from "./script_03.js";
+const s1 = Symbol("s1");
+const s2 = Symbol("s1");
+console.log(s1 === s2);		// false
+
+const s3 = Symbol.for("s2");
+const s4 = Symbol.for("s2");
+console.log(s3 === s4);		// true
+console.log(s3 === ss);		// true
+```
+
+
+
 
 
 ## 七. Set的基本使用
@@ -260,7 +292,7 @@ const map = new Map()
 map.set(info,"ASa")
 ```
 
-map常见的属性和方法:
+### 1. map常见的属性和方法:
 
 - **支持以 `new Map([[key1,value1], [key2,value2], [key3,value3]])`**的形式定义map
 
@@ -271,6 +303,21 @@ map常见的属性和方法:
 - clear(): 清空
 - forEach(): 遍历, 直接获取到value
 - 支持for of 的遍历和迭代, for of 拿到的是[key, value]形式的内容
+
+
+
+### 2. map与object的对比
+
+多数开发任务中, map和object的区别不大, 但当涉及到**内存和性能时**, 两者还是有差别的
+
+- 内存占用
+  - map的键值对所占用的内存更小
+- 插入性能
+  - 两者插入键值对的消耗大致相当, 但map在浏览器中稍快一点, 如果代码涉及到大量的键值对插入, map性能更加
+- 查找速度
+  - 差异极小, 在吧object当数组用(key为连续number), 浏览器会有优化, 如果设计大量查找, 则object更佳
+- 删除性能
+  - 如果代码涉及大量删除属性操作, 选map, 使用delete删除object属性的性能饱受诟病
 
 
 

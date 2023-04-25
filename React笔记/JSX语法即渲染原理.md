@@ -81,7 +81,13 @@ render(){
 
 
 
-### 5. React事件绑定
+### 5. JSX可以防止注入
+
+- 可以在JSX中安全的插入`{}`用户输入的内容,因为React DOM在渲染所有的输入内容之前,默认会进行**转义**, 所有的内容在被渲染之前都被转换为字符串, 可以有效的防止XSS(跨站脚本的攻击)
+
+
+
+### 6. React事件绑定
 
 - React事件命名采用小驼峰(如: onClick)
 - 需要通过`{}`来传入一个事件处理函数, 这个函数在事件发生时被执行
@@ -175,7 +181,7 @@ obj1.ab();
 
 
 
-### 6. 条件渲染
+### 7. 条件渲染
 
 ```jsx
 const { isReady } = this.state
@@ -210,15 +216,48 @@ return (
 
 ## 二. JSX渲染流程(React.createElement)
 
-1. 遇到任何带标签的`<APP/>`, jsx是通过Babel转换成React.createElement()函数调用,创建元素组成虚拟DOM
-2. 利用Babel转换其中的html代码, 每遇到一个标签,就会调用`React.createElement("div",{属性},...子元素)`创建一个一个元素, 生成一个树结构
-   1. 通过`React.createElement()`创建的是`ReactElement`对象(JS对象), 通过children生成一个虚拟DOM
-   2. 再由虚拟DOM生成真实DOM
-3. 生成的树结构就是**虚拟DOM**(JS对象),里面的都是虚拟节点, React再根据虚拟DOM渲染成真实的DOM
+1. 遇到任何带标签的`<APP/>`, jsx是通过Babel转换成**React.createElement()**函数调用,创建元素组成**虚拟DOM**
+   1. 是利用Babel调用`React.createElement()`这个函数
+
+
+**两种写法效果相同:**
+
+```react
+const element = (
+  <h1 className="greeting">
+    Hello, world!
+  </h1>
+);
+```
+
+```jsx
+const element = React.createElement(
+  'h1',
+  {className: 'greeting'},
+  'Hello, world!'
+);
+```
+
+**生成的虚拟DOM:**
+
+```jsx
+const element = {
+  type: 'h1',
+  props: {
+    className: 'greeting',
+    children: 'Hello, world!'
+  }
+};
+```
+
+
+
+2. 利用Babel转换其中的html代码, 每遇到一个标签,就会调用`React.createElement("div",{属性},...子元素)`创建一个一个元素,标签内的子元素也会被调用生成children, 从而一级一级的调用下去, 直到全部遍历完成, 生成一个**树结构(虚拟DOM树)**
+1. React再根据虚拟DOM渲染成真实的DOM
    1. 虚拟DOM可以做跨平台应用程序, 解析方式不同
    2. 可以在更新时利用diff算法决定更新那里
-4. 通过`ReactDOM.render` 让虚拟DOM和真实DOM同步起来, 这个过程叫做协调
+2. 通过`ReactDOM.render` 让虚拟DOM和真实DOM同步起来, 这个过程叫做协调
 
 
 
-- JSX可以看成是`React.createElement(component,props,...children)`的语法糖, 所有的jsx最终都会被转换为这个函数调用
+- JSX可以看成是`React.createElement(component,props,...children)`的**语法糖**, 所有的jsx最终都会被转换为这个函数调用

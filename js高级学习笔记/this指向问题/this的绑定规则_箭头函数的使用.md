@@ -109,6 +109,31 @@ const foo1 = foo.bind(obj)
 
 
 
+### 4. 闭包中的this问题
+
+```js
+window.identity = "The Window"
+
+let obj = {
+    identity: "The Obj",
+    getIdentityFunc() {
+        console.log(this)  // obj , 在对象中的函数, 隐式绑定
+        let that = this    // 间接传递
+        return function() {
+            console.log(that.identity)
+            console.log(this.identity)
+        }
+    }
+}
+
+obj.getIdentityFunc()()  // "The Obj"  
+						 // "The Window"
+```
+
+- 原因, **每个函数都会在被调用时自动创建两个特殊变量: this和arguments, 内部的函数不可能直接访问到外部函数的这两个变量, 因此也就无法通过闭包传递下去, 但可以使用间接的传递方式**
+
+
+
 ## 二. 箭头函数
 
 - 箭头函数不会绑定this, arguments属性

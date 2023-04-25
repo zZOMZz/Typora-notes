@@ -69,6 +69,7 @@ interface ILength {
 }
 
 // 限制传入的泛型必须包含一个length属性
+// 也就是说T必须实现ILength
 function<T extends ILength>(arg: T) {
     //
 }
@@ -86,7 +87,7 @@ interface IKUN {
 
 type IKunKeys = keyof IKun  // "name" | "age"
 // 也就被赋予IKunKesys类型的变量, 只能接受"names"或者"age"这两个参数
-// key只接受obj中的key名
+// key只接受obj中的key名: "name"| "age"
 function getObjectProperty<O, K extends keyof O>(obj: O, key: K) {}
 ```
 
@@ -109,7 +110,7 @@ interface IPerson {
 // 可以添加修饰符或者可选等操作
 // 定义映射类型时, 只能用type
 type MapType<T> = {
-    // 会自动遍历所有的key, 返回的类型全为readonly和必选的
+    // 会自动遍历所有的key, 返回的类型全为readonly和必选的(删除了可选修饰符)
     readonly [key in keyof T]-?: T[key]
 }
 
@@ -131,7 +132,7 @@ type NewPerson = MapType<IPerson>
 
 ### 1. 内置工具:
 
-#### ThisParameterType
+#### `ThisParameterType<T>`
 
 - 用于提取一个函数类型Type的this参数类型
 - 如果这个函数类型没有this参数(箭头函数)则返回unknow
@@ -141,7 +142,7 @@ type FooType = typeof foo
 type FooThisType = ThisParameterType<FooType>  // 拿到其中的this参数类型
 ```
 
-#### OmitThisParameter
+#### `OmitThisParameter<T>`
 
 - 用于移除一个函数类型Type的this参数类型, 返回当前的函数类型
 
@@ -151,7 +152,7 @@ type FooType = typeof foo
 OmitThisParameter<FooType> // (args) => void
 ```
 
-#### ThisType:
+#### `ThisType<T>`
 
 - 给this赋予一个类型, 可以与interface用`&`联系起来
 - 用作标记一个上下文的this类型
@@ -159,7 +160,7 @@ OmitThisParameter<FooType> // (args) => void
 
 
 ```tsx
-// store中的this绑定IState类型
+// store中的this绑定IState类型, 使typescript能识别出this的类型并用于检测
 const store: IStore & ThisType<IState> = {
 	state: {
         name: "zz",
@@ -173,9 +174,10 @@ const store: IStore & ThisType<IState> = {
 store.eating.apply(store.state)
 ```
 
-#### ReturnType
+#### `ReturnType<T>`
 
-- 拿到函数的返回类型
+- 拿到函数类型的返回类型
+- 注意不能将函数传入, 而应该**将函数的类型传入**
 
 ```tsx
 type Calc = (arg1: number, arg2: number) => number
@@ -187,10 +189,10 @@ type returnType = ReturnType<Calc>  // number
 type returnType = ReturnType<typeof foo> // string
 ```
 
-#### Partial
+#### `Partial<T>`
 
 - 将一个类型中所有的选项都转换为可选的
-- 利用映射类型来实现
+- 可以利用映射类型来实现
 
 ```tsx
 interface IKun {
@@ -201,25 +203,29 @@ interface IKun {
 type IKunOptional = Partial<IKun>  // name和age都变为可选的
 ```
 
-#### Required:
+#### `Required<T>`:
 
 - 将所有的选项都变为必选的
 - 利用映射类型加上`-`修饰符, `-?`
 
 ```tsx
 interface IKun {
-    name: string
-    age: number
+    name?: string
+    age?: number
 }
 
 type IKunOptional = Required<IKun>  // name和age都变为必选的
+// { name: string, age: number  }
 ```
 
-#### Readonly
+#### `Readonly<T>`
 
 - 与上面相似, 也是与映射类型相关
 
-#### Record
+#### `Record<K extends keyof any, T>`
+
+- 定义一个对象的属性(key)和值(value)的类型, 主要用于定义对象
+- **TypeScript中会隐式的将number等类型的key转换为string**
 
 ```tsx
 type res = keyof any // number | string | symbol 能作为key的类型
@@ -228,33 +234,67 @@ type MyRecord<keys extends keyof any, T> = {
 }
 ```
 
-#### Pick
+#### `Exculde<keyof T, K >`
+
+- 排除一些key, 返回的类型还是`keyof ` : ` "name" | "age" `这种的
+
+```ts
+type Person = {
+    name: string,
+    age: number,
+    hobby: string
+}
+
+type newPersonkeys = Exclude<keyof Person, "hobby">
+// "name" | "age"
+
+
+// 实现
+// 当U为"bane" | "zzzz"这种多类型时, "bane"也会单独匹配上
+type Exclude<T, U> = T extends U ? never : T;
+```
+
+
+
+#### `Pick<T, K extends keyof T>`
 
 - 构造一个类型, 从Type类型中挑取一些keys
 
 ```tsx
-type MyPick<T, K extends keyof K> = {
-    [P in k]: T[P]
+type Pick<T, K extends keyof T> = {
+    [P in K]: T[P]
 }
 ```
 
-#### Omit
+#### `Omit`
 
 - 构造一个类型, 从Type类型中过滤一些属性keys
+- 注意`Omit`返回的也是一个interface对象
 
 ```tsx
+// Omit可以通过Pick和Exclude实现
+type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>
+
+// 1. 复杂写法
 type MyOmit<T, K> = {
     [P in keyof T as P extends K ? never : P]: T[P]
 }
+// 2. 简化
+type MyOmit<T, K extends keyof any> = {
+	[P in Exclude<keyof T, K>]: T[P]            
+}
+
 interface IPerson {
     name: string
     height: string
 }
 
 type IKun = Omit<IPerson,"height">
+// IKUN
+// { name: string }
 ```
 
-#### InstanceType
+#### `InstanceType`
 
 - 用于构造一个由所有Type的构造函数的实例类型组成的类型
 
@@ -280,7 +320,7 @@ type MyInstanceType<T extends new (...args: any[]) => any> = T extends new (...a
 
 ## 七. 条件类型
 
-- 基于输入的类型来决定输出的类型
+- 进行条件判断, 基于输入的类型来决定输出的类型
 - `SomeType extends OtherType ? TrueType : FalseType`
 
 ```tsx
@@ -298,18 +338,31 @@ sun("ww","zz")
 
 ## 八. 在条件类型中进行推断(infer)
 
-- 一种占位推断符
+- 一种占位推断符, 在条件类型中推断类型变量
+  - 只能用于条件类型, 并且用在`extends`关键字之后的类型中`
+  - 它的作用是告诉 TypeScript 编译器，在推断时应该把某个类型的具体部分作为一个**新的类型变量**来处理，而不是将其作为一个具体类型来处理。这样就可以在条件类型中根据不同的条件推断出不同的类型。
+
 
 ```tsx
 // 实现ReturnType
-type MyReturnType<T extends (...args: any[]) => any> = T extends  (...args: any[]) => infer R ? R : never
+// (...args: any[]) => any 函数类型
+type MyReturnType<T extends (...args: any[]) => any> = T extends  (...args: any[]) => (infer R) ? R : never
 // 返回参数类型
 type MyReturnType<T extends (...args: any[]) => any> = T extends  (...args: infer A) => any ? A : never
 ```
 
+```ts
+type ElementType<T> = T extends (infer U)[] ? U : never;
+
+type NumberArray = Array<number>;
+type Element = ElementType<NumberArray>;  // number
+```
 
 
-## 九. 联合类型分发
+
+## 九. 分发联合类型
+
+- 在使用泛型`<T>`时, 进行类型推导和计算时, 对于联合类型`number | string`会将其拆分成多个子类型, 并对每个子类型进行操作和计算, 最终形成新的联合类型
 
 - 在泛型中使用条件类型时, 如果传入一个联合类型, 就会变成分发的
 
@@ -325,10 +378,25 @@ type NumberAndString = toArray<number | string>
 ## 十. 函数签名中的泛型
 
 ```ts
+// 这是一个使用interface定义的函数类型
+// 因为useSelector是两层函数嵌套的, 因此这里也是两层函数
 interface TypedUseSelectorHook<TState> {
-    <TSelector>(selector: (state: TState) => TSelector, equalityFn?: EqualityFn<TSelector>) : TSelector
+    // <TSelector>意思是这个函数可以输入确定一个类型, 如果返回的类型不符, 则会报错
+    <TSelector>(selector: (state: TState) => TSelector) : TSelector
 }
+
+// 相同
+type TypedUseSelectorHook<TState> 
+	= <TSelector>(selector: (state: Tstate) => TSelector) =>  TSelector
+
+// TSelector的作用
+import { TypedUseSelectorHook, useSelector } from "react-redux";
+
+const useAppSelector: TypedUseSelectorHook<AppState> = useSelector;
+
+// 确定返回的值是number, 可以自动推导, 也能使其自己推导
+const count = useAppSelector<number>((state) => state.count);
 ```
 
-- 表示在符合这个类型的函数, 被调用时可以接收一个参数TSelector, `foo<TSelector>()`, 如果没有传入则会自行进行推导
-- 上面的例子里的写法, 保证了整个函数的返回类型, 是这个函数接收的第一个参数(函数)的返回类型
+- 表示类型为`TypedUseSelectorHook`的函数可以接收一个参数`<TSelector>`, 确定其返回值的类型, `foo<TSelector>()`, 如果没有传入则会自行进行推导
+- `TState`使TypeScript能自动推导出`State`的类型, `TSelector`使TypeScript能推导出返回值的类型

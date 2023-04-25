@@ -2,6 +2,8 @@
 
 # SQL语句
 
+联系学习网站:　[SQLBolt - Learn SQL - Introduction to SQL](https://sqlbolt.com/lesson/introduction)
+
 **与数据库沟通的语言**:
 
 - SQL(**Structured Query Language**), 结构化查询语言, 简称SQL

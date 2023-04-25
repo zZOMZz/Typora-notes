@@ -51,8 +51,32 @@ price.format()
 
 ### 1. 类型声明文件(.d.ts)
 
+- 因为一些第三方库或框架并不是使用TypeScript写的, 因此当需要用到它们的时候, 可以通过类型声明文件告诉TypeScript如何解析理解这些非TypeScript代码
+
 - 这个文件中定义的类型, 默认是全局的
 - 其中不写逻辑代码
+
+```ts
+declare const myVar: string;
+declare function myFunc(arg1: number, arg2: string): boolean;
+declare class MyClass {
+  constructor(arg1: number);
+  myMethod(arg2: string): void;
+}
+declare namespace myNamespace {
+  function myNamespaceFunc(): void;
+}
+
+// 全局有效
+type MyType = {
+  prop1: number;
+  prop2: string;
+}
+```
+
+
+
+
 
 
 

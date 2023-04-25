@@ -52,7 +52,7 @@ class Person {
 
 
 
-### 3. 类的静态方法
+### 3. 类的静态方法(Static Method)
 
 https://www.scaler.com/topics/javascript/static-methods-in-javascript/
 

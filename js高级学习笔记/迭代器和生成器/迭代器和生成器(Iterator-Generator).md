@@ -6,6 +6,8 @@
 
 - for...of主要用来遍历迭代器, **遍历的是value**
 - for...in主要用来获取Array的index和Object的key, **遍历的是key**
+  - **迭代器的一种语法糖**
+
 
 ![Snipaste_2022-12-17_22-19-05](.\图片\Snipaste_2022-12-17_22-19-05.png)
 
@@ -30,7 +32,7 @@
 
 ### 2. 可迭代对象
 
-- 包含一个属性: [Symbol.iterator]
+- 包含一个属性: [Symbol.iterator], **如果对象原型链上的父类实现了Iterable接口, 那么这个对象也就实现了这个接口**
 - 这个属性是一个函数, 该函数返回一个含有`next`属性的对象, 该next是一个可被执行的函数, next函数返回的值得格式和上面相同
 - 因此可以在这个next函数中自由定义该返回什么样的数据
 
@@ -59,7 +61,7 @@ console,log(iterator.next())
 console,log(iterator.next())
 
 // 可迭代对象能使用for of
-for(const item of info){
+for(const item of infos){
     console.log(item)
 }
 
@@ -156,12 +158,14 @@ generator.next() // "rrr"
 generator.return("aaa") // 返回{ done: true, value: "aaa" }
 ```
 
-### 2. yield语法糖
+### 2. yield语法糖(yield*)
+
+- `yield*` 需要返回一个**可迭代对象**, 如数组, `for...of`遍历这个结果时, 会依次调用这个可迭代对象的迭代器
 
 ```js
 const names = ["aa","ss","cc","aaa"]
 function* createArrayIterator(arr){
-    // 一种语法糖, 会一次迭代这个可迭代对象
+    // 一种语法糖, 会依次迭代这个可迭代对象
     yield* arr
 }
 const namesIterator = createArrayIterator(names)
@@ -170,13 +174,58 @@ namesIterator.next()
 namesIterator.next()
 ```
 
+```js
+// 递归
+function* nTimes(n) {
+    if(n>0) {
+        yield* nTimes(n-1)
+        yield n-1
+    }
+}
 
+for(const x of nTimes(3)) {
+    console.log(x)
+}
+
+// 0
+// 1
+// 2
+```
+
+
+
+### 3. await async 解析
+
+- await 和 async 是生成器(generate)和Promise的语法糖
+
+```js
+function* getData(){
+    // 多次执行异步操作, 一个操作需要等到上一个操作的结果
+    const res1 = yield requestData(data1)
+    const res2 = yield requestData(res1 + data2)
+    const res3 = yield requestData(res2 + data3)
+}
+
+const generator = getData()
+// 发动第一次请求
+generator.next().value.then((res1) => {
+    // 第二次请求
+    generator.next(res1).value.then((res2) => {
+        // 第三次请求
+        generator.next(res2).value.then((res3) => {
+            generator.next(res3)
+        })
+    })
+})
+```
 
 
 
 
 
 ## 四. 利用生成器改进迭代器函数
+
+### 1. 改进迭代器(iterator)
 
 ```js
 // 1. 在函数中
@@ -218,26 +267,26 @@ class Person {
 // 这样即使是Person的实例也能使用for...of遍历
 ```
 
-await 和 async 是生成器和Promise的语法糖
+
+
+## 五. 对象解构和数组解构
 
 ```js
-function* getData(){
-    // 多次执行异步操作, 一个操作需要等到上一个操作的结果
-    const res1 = yield requestData(data1)
-    const res2 = yield requestData(res1 + data2)
-    const res3 = yield requestData(res2 + data3)
-}
-
-const generator = getData()
-// 发动第一次请求
-generator.next().value.then((res1) => {
-    // 第二次请求
-    generator.next(res1).value.then((res2) => {
-        // 第三次请求
-        generator.next(res2).value.then((res3) => {
-            generator.next(res3)
-        })
-    })
-})
+// 数组解构
+let [a,b,c] = arr
+// 对象解构
+let { name, age } = obj
+// 扩展运算符
+let arr2 = [...arr1]
+let obj2 = { ...obj1 }
 ```
 
+
+
+- 解构可以分为两种:
+  - **数组解构([...rest])**: 会调用`[Symbol.iterator]`函数返回的迭代器
+    - 使用`let[a,b] = arr`和`const arr2 = [...arr]`均会调用
+  - **对象解构({...rest})**: 不具备`[Symbol.iterator]`方法, 因此会通过**枚举属性进行赋值**的方法进行解构, 会查看属性的`enumerable`描述符, 本质是**创建新对象, 属性赋值**
+    - `const obj1 = { ...obj2 };`不会调用`obj2`的`[Symbol.iterator]`即使他已经自定义了
+    - 包括解构`let { name, age } = obj1`
+  - 上面的写法不严谨, ...是扩展运算符, 不能算解构

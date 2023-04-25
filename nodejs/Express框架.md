@@ -118,6 +118,8 @@ app.use(express.urlencoded({ extended: true }))
 
 #### 3.1 morgan请求日志的记录
 
+[expressjs/morgan: HTTP request logger middleware for node.js (github.com)](https://github.com/expressjs/morgan)
+
 ```js
 const fs = require('fs')
 const morgan = require('morgan')
